@@ -10,13 +10,6 @@ namespace SuperHeroAPI.Controllers
         private static List<SuperHero> heroes = new List<SuperHero>
             {
                 new SuperHero {
-                    Id = 1,
-                    Name = "Spider Man",
-                    FirstName = "Peter",
-                    LastName = "Paker",
-                    Place = "Califonia"
-                },
-                new SuperHero {
                     Id = 2,
                     Name = "Iron Man",
                     FirstName = "Tony",
@@ -24,17 +17,25 @@ namespace SuperHeroAPI.Controllers
                     Place = "Paris"
                 }
             };
+
+        //Db Constructor
+        private readonly DataContext _context;
+
+        public SuperHeroController(DataContext context)
+        {
+            _context = context;
+        }
         
         [HttpGet]
         public async Task<ActionResult<List<SuperHero>>> Get()
         {
-            return Ok(heroes);
+            return Ok(await _context.SuperHeroes.ToListAsync());
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<SuperHero>> Get(int id)
         {
-            var hero = heroes.Find(h => h.Id == id);
+            var hero = await _context.SuperHeroes.FindAsync(id);
             if (hero == null)
                 return BadRequest("Hero Not Found");
 
@@ -44,8 +45,10 @@ namespace SuperHeroAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<List<SuperHero>>> AddHero(SuperHero hero)
         {
-            heroes.Add(hero);
-            return Ok(heroes);
+            _context.SuperHeroes.Add(hero);
+            await _context.SaveChangesAsync();
+
+            return Ok(await _context.SuperHeroes.ToListAsync());
         }
 
         [HttpPut]
